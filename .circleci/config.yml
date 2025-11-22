@@ -1,0 +1,32 @@
+version: 2.1
+
+executors:
+  macos-executor:
+    macos:
+      xcode: 14.2
+
+jobs:
+  validate:
+    executor: macos-executor
+    steps:
+      - checkout
+      - run:
+          name: Check Swift version
+          command: swift --version
+      - run:
+          name: Validate Metal kernel syntax
+          command: xcrun metal -std=metal3.1 kernel.metal -o /dev/null
+      - run:
+          name: Validate Swift code
+          command: swiftc -parse main.swift
+      - run:
+          name: Run actionlint
+          command: |
+            bash -c "$(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)"
+            ./actionlint .github/workflows/*.yml
+
+workflows:
+  version: 2
+  build-and-validate:
+    jobs:
+      - validate
