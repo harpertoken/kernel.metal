@@ -69,7 +69,7 @@ Triggers
 
 Triggers tell CircleCI when to run your pipeline.
 
-- **Trigger source**: GitHub (primary), GitLab (via sync)
+- **Trigger source**: GitHub (primary), GitLab (via sync from https://gitlab.com/harpertoken/kernel.metal)
 - **Pipeline to trigger**: kernel.metal
 - **Events**: Push to main branch
 - **Actions**: Run validate job
