@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: LicenseRef-KERNELMETAL-NC
+# Copyright (c) 2025 KERNEL.METAL (harpertoken)
+
+name: SPDX Auto Fix (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      runOnBranch:
+        required: false
+        description: 'Branch to run autofix against (defaults to current)'
+
+permissions:
+  contents: write
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run autofix script
+        env:
+          GITHUB_HEAD_REF: ${{ github.event.inputs.runOnBranch }}
+        run: |
+          chmod +x scripts/autofix-spdx.sh
+          ./scripts/autofix-spdx.sh
+
+      - name: Push autofix commit
+        if: success()
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.inputs.runOnBranch || github.ref_name }}

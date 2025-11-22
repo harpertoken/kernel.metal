@@ -1,0 +1,117 @@
+# SPDX-License-Identifier: LicenseRef-KERNELMETAL-NC
+# Copyright (c) 2025 KERNEL.METAL (harpertoken)
+
+name: SPDX Compliance Bot
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run SPDX check script
+        id: spdx
+        run: |
+          node --version
+          npm --version || true
+          node scripts/check-spdx.js > spdx-report.json || true
+          cat spdx-report.json
+
+      - name: Parse report
+        id: parse
+        run: |
+          REPORT=$(cat spdx-report.json)
+          {
+            echo "report<<EOF"
+            echo "$REPORT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create PR review comments for missing headers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = JSON.parse(process.env.REPORT || '{}')
+            const { github, context } = require('@actions/github')
+            const missing = report.missing || []
+            if (missing.length === 0) {
+              // Add success check
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '✅ SPDX check passed — all changed files include the required license header.'
+              })
+            } else {
+              // Label the PR
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['license:spdx-noncompliant']
+              }).catch(e => console.log('label error', e.message))
+
+              let body = '### ⚠ SPDX License Compliance Report\n\nThe following changed files are missing the license header. Suggested inline fixes have been added where possible.\n\n'
+              for (const item of missing) {
+                body += `- \`${item.file}\`\n`
+              }
+              body += '\n---\nClick the suggested fixes above to apply them and re-run CI.'
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              })
+
+              // Create review comments with suggested changes
+              for (const item of missing) {
+                try {
+                  const path = item.file
+                  const suggestion = `// SPDX-License-Identifier: ${require('fs').readFileSync('project.meta.json','utf8') && JSON.parse(require('fs').readFileSync('project.meta.json','utf8')).spdx}\n// ${JSON.parse(require('fs').readFileSync('project.meta.json','utf8')).copyright}\n\n`
+                  await github.rest.pulls.createReview({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: context.issue.number,
+                    body: `Suggested SPDX header for ${path}`,
+                    event: 'COMMENT',
+                    comments: [
+                      {
+                        path,
+                        side: 'RIGHT',
+                        line: 1,
+                        body: `Suggestion:\n\n\`\`\`patch\n+ ${suggestion}\n\- (remove this line if it's not applicable)\n\`\`\``
+                      }
+                    ]
+                  })
+                } catch (e) {
+                  console.log('review comment error', e.message)
+                }
+              }
+
+              // Fail the job to block merging
+              core.setFailed('SPDX header violations detected')
+            }
+        env:
+          REPORT: ${{ steps.parse.outputs.report }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
