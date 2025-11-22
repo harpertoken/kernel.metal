@@ -101,7 +101,7 @@ jobs:
                         path,
                         side: 'RIGHT',
                         line: 1,
-                        body: `Suggestion:\n\n\`\`\`patch\n+ ${suggestion}\n\- (remove this line if it's not applicable)\n\`\`\``
+                        body: `Suggested SPDX header:\n\n\`\`\`suggestion\n${suggestion}\`\`\``
                       }
                     ]
                   })
