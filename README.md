@@ -59,22 +59,12 @@ This performs vector addition on 1,000,000 floats using GPU compute.
 CI/CD
 =====
 
-- **GitHub Actions**: Runs linting on ubuntu-latest, build/test on self-hosted M1 runners (if available).
+- **GitHub Actions**: Runs linting on ubuntu-latest and syncs to GitLab.
 - **GitLab CI**: Runs full build and test on macOS for Apple Silicon compatibility.
 - **CircleCI**: Runs validation on Ubuntu (file checks, actionlint).
 - **Local CI**: Use `act` for GitHub Actions simulation, `gitlab-ci-local` for GitLab CI, or CircleCI local CLI.
 
-Triggers
---------
-
-Triggers tell CircleCI when to run your pipeline.
-
-- **Trigger source**: GitHub (primary), GitLab (via sync from https://gitlab.com/harpertoken/kernel.metal)
-- **Pipeline to trigger**: kernel.metal
-- **Events**: Push to main branch
-- **Actions**: Run validate job
-
-Note: GitHub's hosted macOS runners are Intel-based and don't support Metal. We use self-hosted M1 runners for build/test. If no self-hosted runner, those jobs skip. Lint and sync work on hosted runners.
+Note: GitHub's hosted macOS runners are Intel-based and don't support Metal. Build/test are local or on GitLab. Lint and sync work on hosted runners.
 
 References
 ==========
