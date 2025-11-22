@@ -1,0 +1,44 @@
+name: SPDX Header Check
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-spdx:
+    name: Ensure SPDX headers exist
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for missing SPDX headers
+        run: |
+          # File extensions to check — add more as needed
+          FILE_TYPES="*.ts *.tsx *.js *.jsx *.py *.cpp *.c *.h *.sh *.go *.rs *.java *.rb"
+          
+          # Find changed files in the PR with the above extensions
+          CHANGED_FILES=$(git diff --name-only HEAD^ | grep -E "$(echo $FILE_TYPES | sed 's/ /|/g')" | || true)
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No relevant files changed."
+            exit 0
+          fi
+          
+          echo "Checking SPDX headers in changed files:"
+          echo "$CHANGED_FILES"
+          
+          MISSING=""
+          for file in $CHANGED_FILES; do
+            if ! grep -q "SPDX-License-Identifier: LicenseRef-KERNELMETAL-NC" "$file"; then
+              MISSING="$MISSING\n$file"
+            fi
+          done
+          
+          if [ -n "$MISSING" ]; then
+            echo -e "❌ The following files are missing SPDX headers: $MISSING"
+            exit 1
+          else
+            echo "✔ All changed files include SPDX headers."
+          fi
