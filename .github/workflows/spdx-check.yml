@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: LicenseRef-KERNELMETAL-NC
+# Copyright (c) 2025 KERNEL.METAL (harpertoken)
+
 name: SPDX Header Check
 
 on:
@@ -15,10 +18,9 @@ jobs:
 
       - name: Check for missing SPDX headers
         run: |
-          # File extensions to check — add more as needed
+          # Load SPDX ID from source of truth
+          SPDX_ID=$(jq -r .spdx project.meta.json)
           FILE_TYPES="*.ts *.tsx *.js *.jsx *.py *.cpp *.c *.h *.sh *.go *.rs *.java *.rb"
-          
-          # Find changed files in the PR with the above extensions
           CHANGED_FILES=$(git diff --name-only HEAD^ | grep -E "${FILE_TYPES// /|}" || true)
           
           if [ -z "$CHANGED_FILES" ]; then
@@ -31,7 +33,7 @@ jobs:
           
           MISSING=""
           for file in $CHANGED_FILES; do
-            if ! grep -q "SPDX-License-Identifier: LicenseRef-KERNELMETAL-NC" "$file"; then
+            if ! grep -q "SPDX-License-Identifier: $SPDX_ID" "$file"; then
               MISSING="$MISSING\n$file"
             fi
           done
