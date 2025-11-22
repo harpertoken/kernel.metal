@@ -61,12 +61,12 @@ This performs vector addition on 1,000,000 floats using GPU compute.
 CI/CD
 =====
 
-- **GitHub Actions**: Runs linting on ubuntu-latest for workflow validation. Syncs commits to GitLab.
+- **GitHub Actions**: Runs linting on ubuntu-latest, build/test on self-hosted M1 runners (if available).
 - **GitLab CI**: Runs full build and test on macOS for Apple Silicon compatibility.
-- **CircleCI**: Runs validation on macOS (syntax checks for Metal and Swift, actionlint).
+- **CircleCI**: Runs validation on Ubuntu (file checks, actionlint).
 - **Local CI**: Use `act` for GitHub Actions simulation, `gitlab-ci-local` for GitLab CI, or CircleCI local CLI.
 
-Note: We removed the build/test jobs from GitHub CI because Metal framework compilation and execution fail on GitHub's Intel-based macOS runners (they lack proper Apple Silicon GPU support). This caused the "Permission denied" error and potential build failures. Lint works on ubuntu, so we kept that. Build/test succeed locally on your M1. If you have self-hosted M1 runners, we can add the jobs back. No other reasons—it's about compatibility.
+Note: GitHub's hosted macOS runners are Intel-based and don't support Metal. We use self-hosted M1 runners for build/test. If no self-hosted runner, those jobs skip. Lint and sync work on hosted runners.
 
 References
 ==========
