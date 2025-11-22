@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcscmblueprint
+
+# Build artifacts
+build/
+*.o
+*.dylib
+*.a
+
+# Executables
+vector_add
+actionlint
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+
+# IDEs
+.vscode/
+.idea/
+
+# CI
+.gitlab-ci.yml.artifacts/

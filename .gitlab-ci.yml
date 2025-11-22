@@ -1,0 +1,23 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  tags:
+    - macos
+  script:
+    - swiftc main.swift -framework Metal -o vector_add
+  artifacts:
+    paths:
+      - vector_add
+    expire_in: 1 hour
+
+test:
+  stage: test
+  tags:
+    - macos
+  script:
+    - ./vector_add
+  dependencies:
+    - build

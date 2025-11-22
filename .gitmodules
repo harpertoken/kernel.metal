@@ -1,0 +1,5 @@
+# Git submodules
+# Add submodule entries here if needed, e.g.:
+# [submodule "path/to/submodule"]
+#	path = path/to/submodule
+#	url = https://github.com/user/repo.git

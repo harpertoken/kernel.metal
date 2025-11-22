@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Installation script for KERNEL.METAL project dependencies
+# This script installs required tools for development and CI testing
+
+echo "Installing actionlint for GitHub Actions linting..."
+bash -c "$(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)"
+
+echo "Installing act for local GitHub Actions testing..."
+curl -s https://api.github.com/repos/nektos/act/releases/latest | jq -r '.assets[] | select(.name | contains("Darwin") and contains("arm64")) | .browser_download_url' | xargs curl -L -o act.tar.gz
+tar -xzf act.tar.gz
+chmod +x act
+rm act.tar.gz
+
+echo "Installation complete. Tools: actionlint, act"
+echo "Note: Ensure Docker Desktop is installed and running for act to work."
