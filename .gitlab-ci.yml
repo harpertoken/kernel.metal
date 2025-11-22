@@ -6,6 +6,8 @@ build:
   stage: build
   tags:
     - macos
+  before_script:
+    - ./post-setup.sh
   script:
     - swiftc main.swift -framework Metal -o vector_add
     - chmod +x vector_add
@@ -14,6 +16,8 @@ test:
   stage: test
   tags:
     - macos
+  before_script:
+    - ./post-setup.sh
   script:
     - ./vector_add
   dependencies:
