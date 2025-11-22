@@ -64,6 +64,16 @@ CI/CD
 - **CircleCI**: Runs validation on Ubuntu (file checks, actionlint).
 - **Local CI**: Use `act` for GitHub Actions simulation, `gitlab-ci-local` for GitLab CI, or CircleCI local CLI.
 
+Triggers
+--------
+
+Triggers tell CircleCI when to run your pipeline.
+
+- **Trigger source**: GitHub (primary), GitLab (via sync)
+- **Pipeline to trigger**: kernel.metal
+- **Events**: Push to main branch
+- **Actions**: Run validate job
+
 Note: GitHub's hosted macOS runners are Intel-based and don't support Metal. We use self-hosted M1 runners for build/test. If no self-hosted runner, those jobs skip. Lint and sync work on hosted runners.
 
 References
