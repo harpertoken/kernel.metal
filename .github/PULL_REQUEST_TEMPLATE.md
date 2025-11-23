@@ -12,6 +12,7 @@ Brief description of the changes.
 - [ ] Code compiles with `swiftc main.swift -framework Metal -o vector_add`
 - [ ] Metal kernel validates with `xcrun metal kernel.metal`
 - [ ] CI passes (GitHub Actions, GitLab CI, CircleCI)
+- [ ] SPDX headers added to new/modified files
 - [ ] Documentation updated
 - [ ] Ready for review
 
