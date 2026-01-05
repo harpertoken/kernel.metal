@@ -51,8 +51,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs')
             const report = JSON.parse(process.env.REPORT || '{}')
-            const { github, context } = require('@actions/github')
             const missing = report.missing || []
             if (missing.length === 0) {
               // Add success check
@@ -88,7 +88,8 @@ jobs:
               for (const item of missing) {
                 try {
                   const path = item.file
-                  const suggestion = `// SPDX-License-Identifier: ${require('fs').readFileSync('project.meta.json','utf8') && JSON.parse(require('fs').readFileSync('project.meta.json','utf8')).spdx}\n// ${JSON.parse(require('fs').readFileSync('project.meta.json','utf8')).copyright}\n\n`
+                  const meta = JSON.parse(fs.readFileSync('project.meta.json', 'utf8'))
+                  const suggestion = `// SPDX-License-Identifier: ${meta.spdx}\n// ${meta.copyright}\n\n`
                   await github.rest.pulls.createReview({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -100,7 +101,7 @@ jobs:
                         path,
                         side: 'RIGHT',
                         line: 1,
-                        body: `Suggestion:\n\n\`\`\`patch\n+ ${suggestion}\n\- (remove this line if it's not applicable)\n\`\`\``
+                        body: `Suggested SPDX header:\n\n\`\`\`suggestion\n${suggestion}\`\`\``
                       }
                     ]
                   })
