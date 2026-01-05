@@ -1,3 +1,4 @@
+---
 stages:
   - build
   - test
@@ -11,6 +12,10 @@ build:
   script:
     - swiftc main.swift -framework Metal -o vector_add
     - chmod +x vector_add
+  artifacts:
+    paths:
+      - vector_add
+    expire_in: 1 day
 
 test:
   stage: test
