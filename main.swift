@@ -13,20 +13,20 @@ guard let device = MTLCreateSystemDefaultDevice() else {
 }
 
 // Define the Metal shader source code as a string
-// This includes the kernel function for vector addition
+// This includes the kernel function for SAXPY
 let source = """
 #include <metal_stdlib>
 using namespace metal;
 
-kernel void vector_add(
-    device const float* A [[buffer(0)]],
-    device const float* B [[buffer(1)]],
-    device float* C [[buffer(2)]],
+kernel void saxpy(
+    constant float &a [[buffer(0)]],
+    device const float* X [[buffer(1)]],
+    device float* Y [[buffer(2)]],
     constant uint &count [[buffer(3)]],
     uint id [[thread_position_in_grid]]
 ) {
     if (id >= count) return;
-    C[id] = A[id] + B[id];
+    Y[id] = a * X[id] + Y[id];
 }
 """
 
@@ -38,8 +38,8 @@ do {
     fatalError("Failed to create Metal library: \(error)")
 }
 
-// Get the compute function named "vector_add" from the library
-guard let function = library.makeFunction(name: "vector_add") else {
+// Get the compute function named "saxpy" from the library
+guard let function = library.makeFunction(name: "saxpy") else {
     fatalError("Failed to find function")
 }
 
@@ -54,14 +54,17 @@ do {
 // Define the problem size: 1,000,000 floats
 var count: UInt32 = 1_000_000
 
+// SAXPY scalar
+var a: Float = 2.0
+
 // Calculate buffer size in bytes
 let bufferSize = Int(count) * MemoryLayout<Float>.size
 
-// Create three buffers: A, B, C
+// Create buffers: a (scalar), X, Y
 // Using .storageModeShared so CPU and GPU can access them
-guard let bufferA = device.makeBuffer(length: bufferSize, options: .storageModeShared),
-      let bufferB = device.makeBuffer(length: bufferSize, options: .storageModeShared),
-      let bufferC = device.makeBuffer(length: bufferSize, options: .storageModeShared) else {
+guard let aBuffer = device.makeBuffer(bytes: &a, length: MemoryLayout<Float>.size, options: .storageModeShared),
+      let bufferX = device.makeBuffer(length: bufferSize, options: .storageModeShared),
+      let bufferY = device.makeBuffer(length: bufferSize, options: .storageModeShared) else {
     fatalError("Failed to create buffers")
 }
 
@@ -70,13 +73,13 @@ guard let countBuffer = device.makeBuffer(bytes: &count, length: MemoryLayout<UI
     fatalError("Failed to create count buffer")
 }
 
-// Fill input buffers A and B with data
-// A[i] = i, B[i] = i * 2, so C[i] should be i + 2*i = 3*i
-let pointerA = bufferA.contents().bindMemory(to: Float.self, capacity: Int(count))
-let pointerB = bufferB.contents().bindMemory(to: Float.self, capacity: Int(count))
+// Fill input buffers X and Y with data
+// X[i] = i, Y[i] = i * 2, a = 2.0, so Y[i] should be 2*i + 2*i = 4*i
+let pointerX = bufferX.contents().bindMemory(to: Float.self, capacity: Int(count))
+let pointerY = bufferY.contents().bindMemory(to: Float.self, capacity: Int(count))
 for i in 0..<Int(count) {
-    pointerA[i] = Float(i)
-    pointerB[i] = Float(i * 2)
+    pointerX[i] = Float(i)
+    pointerY[i] = Float(i * 2)
 }
 
 // Create a command queue for submitting commands to the GPU
@@ -98,9 +101,9 @@ guard let computeEncoder = commandBuffer.makeComputeCommandEncoder() else {
 computeEncoder.setComputePipelineState(pipelineState)
 
 // Set the buffers on the encoder at their respective indices
-computeEncoder.setBuffer(bufferA, offset: 0, index: 0)
-computeEncoder.setBuffer(bufferB, offset: 0, index: 1)
-computeEncoder.setBuffer(bufferC, offset: 0, index: 2)
+computeEncoder.setBuffer(aBuffer, offset: 0, index: 0)
+computeEncoder.setBuffer(bufferX, offset: 0, index: 1)
+computeEncoder.setBuffer(bufferY, offset: 0, index: 2)
 computeEncoder.setBuffer(countBuffer, offset: 0, index: 3)
 
 // Define the thread execution configuration
@@ -126,17 +129,17 @@ commandBuffer.waitUntilCompleted()
 let elapsed = Date().timeIntervalSince(start)
 print("Elapsed (s): \(elapsed)")
 
-// Read back the results from buffer C
-let pointerC = bufferC.contents().bindMemory(to: Float.self, capacity: Int(count))
+// Read back the results from buffer Y
+let pointerY_result = bufferY.contents().bindMemory(to: Float.self, capacity: Int(count))
 
 // Print sample output to console
 print("Sample results:")
 // Print first 5 elements
 for i in 0..<5 {
-    print("C[\(i)] = \(pointerC[i])")
+    print("Y[\(i)] = \(pointerY_result[i])")
 }
 print("...")
 // Print last 5 elements
 for i in (Int(count)-5)..<Int(count) {
-    print("C[\(i)] = \(pointerC[i])")
+    print("Y[\(i)] = \(pointerY_result[i])")
 }
