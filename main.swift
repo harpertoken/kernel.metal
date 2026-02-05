@@ -12,23 +12,14 @@ guard let device = MTLCreateSystemDefaultDevice() else {
     fatalError("Metal is not supported on this device")
 }
 
-// Define the Metal shader source code as a string
-// This includes the kernel function for SAXPY
-let source = """
-#include <metal_stdlib>
-using namespace metal;
-
-kernel void saxpy(
-    constant float &a [[buffer(0)]],
-    device const float* X [[buffer(1)]],
-    device float* Y [[buffer(2)]],
-    constant uint &count [[buffer(3)]],
-    uint id [[thread_position_in_grid]]
-) {
-    if (id >= count) return;
-    Y[id] = a * X[id] + Y[id];
+// Read the Metal shader source code from kernel.metal file
+let kernelFilePath = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("kernel.metal")
+let source: String
+do {
+    source = try String(contentsOf: kernelFilePath, encoding: .utf8)
+} catch {
+    fatalError("Failed to read kernel.metal file: \(error)")
 }
-"""
 
 // Create a Metal library from the source code
 let library: MTLLibrary
