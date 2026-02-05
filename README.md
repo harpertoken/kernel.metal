@@ -1,7 +1,7 @@
-Metal Vector Addition Compute Kernel
-========================================
+Metal SAXPY Compute Kernel
+===========================
 
-Performing large-scale vector operations on the CPU can be slow and inefficient for data-intensive tasks. Utilizing the GPU via Metal compute shaders on Apple Silicon enables parallel processing, significantly accelerating computations like vector addition.
+Performing large-scale vector operations on the CPU can be slow and inefficient for data-intensive tasks. Utilizing the GPU via Metal compute shaders on Apple Silicon enables parallel processing, significantly accelerating computations like SAXPY (Single-precision A*X + Y).
 
 Recommendation
 ==============
@@ -11,7 +11,7 @@ Use Metal compute kernels for parallelizable operations to leverage GPU performa
 Example
 =======
 
-This project adds two vectors of 1,000,000 floats (A[i] = i, B[i] = 2*i) to produce C[i] = 3*i.
+This project performs SAXPY on vectors of 1,000,000 floats (X[i] = i, Y[i] = 2*i, a = 2.0) to produce Y[i] = 2.0*i + 2*i = 4*i.
 
 Kernel Code (kernel.metal)
 --------------------------
@@ -19,15 +19,15 @@ Kernel Code (kernel.metal)
 #include <metal_stdlib>
 using namespace metal;
 
-kernel void vector_add(
-    device const float* A [[buffer(0)]],
-    device const float* B [[buffer(1)]],
-    device float* C [[buffer(2)]],
+kernel void saxpy(
+    constant float &a [[buffer(0)]],
+    device const float* X [[buffer(1)]],
+    device float* Y [[buffer(2)]],
     constant uint &count [[buffer(3)]],
     uint id [[thread_position_in_grid]]
 ) {
     if (id >= count) return;
-    C[id] = A[id] + B[id];
+    Y[id] = a * X[id] + Y[id];
 }
 ```
 
@@ -39,20 +39,21 @@ Host Code (main.swift)
 
 Sample Output
 -------------
+(Shows first 5 and last 5 elements for brevity; full array is 1,000,000 elements)
 ```
 Elapsed (s): 0.001
 Sample results:
-C[0] = 0.0
-C[1] = 3.0
-C[2] = 6.0
-C[3] = 9.0
-C[4] = 12.0
+Y[0] = 0.0
+Y[1] = 4.0
+Y[2] = 8.0
+Y[3] = 12.0
+Y[4] = 16.0
 ...
-C[999995] = 2999985.0
-C[999996] = 2999988.0
-C[999997] = 2999991.0
-C[999998] = 2999994.0
-C[999999] = 2999997.0
+Y[999995] = 3999980.0
+Y[999996] = 3999984.0
+Y[999997] = 3999988.0
+Y[999998] = 3999992.0
+Y[999999] = 3999996.0
 ```
 
 Local Build and Run
