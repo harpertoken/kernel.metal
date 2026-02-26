@@ -26,6 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: swift build
+        run: swiftc main.swift -framework Metal -o vector_add
       - name: Test
-        run: swift test
+        run: ./vector_add
