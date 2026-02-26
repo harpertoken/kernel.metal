@@ -5,17 +5,27 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Install actionlint
-      run: |
-        bash -c "$(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)"
-    - name: Run actionlint
-      run: ./actionlint .github/workflows/*.yml
+      - uses: actions/checkout@v4
+      - name: Install actionlint
+        run: |
+          URL="https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash"
+          bash -c "$(curl $URL)"
+      - name: Run actionlint
+        run: ./actionlint .github/workflows/*.yml
+
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test

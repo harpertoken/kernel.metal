@@ -1,0 +1,12 @@
+# .yamllint.yml
+# SPDX-License-Identifier: LicenseRef-KERNELMETAL-NC
+# Copyright (c) 2025 KERNEL.METAL (harpertoken)
+
+extends: default
+
+rules:
+  document-start: disable
+  truthy: disable
+  line-length: disable
+  indentation: disable
+  brackets: disable
