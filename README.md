@@ -75,7 +75,7 @@ CI/CD
 - **CircleCI**: Runs validation on Ubuntu (file checks, actionlint).
 - **Local CI**: Use `act` for GitHub Actions simulation, `gitlab-ci-local` for GitLab CI, or CircleCI local CLI.
 
-> **⚠️ Important:** GitHub's hosted macOS runners are Intel-based and do not support Metal compute shaders. Full build and test must be performed locally on Apple Silicon hardware or using dedicated macOS runners (e.g., via GitLab CI). Only linting and syncing run on GitHub's hosted runners.
+> **Note:** GitHub's hosted macOS-26 runners run natively on Apple Silicon and support Metal compute shaders. Full build and test can run on GitHub Actions using `macos-26`.
 
 References
 ==========
