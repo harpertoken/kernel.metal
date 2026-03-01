@@ -1,6 +1,10 @@
 Metal SAXPY Compute Kernel
 ===========================
 
+![Metal Compute Shader](https://github.com/harpertoken/.github/raw/main/images/gitlab-runner-settings.png)
+
+[Jump to GitLab Runner Setup](#setting-up-gitlab-runner)
+
 Performing large-scale vector operations on the CPU can be slow and inefficient for data-intensive tasks. Utilizing the GPU via Metal compute shaders on Apple Silicon enables parallel processing, significantly accelerating computations like SAXPY (Single-precision A*X + Y).
 
 Recommendation
@@ -76,6 +80,57 @@ CI/CD
 - **Local CI**: Use `act` for GitHub Actions simulation, `gitlab-ci-local` for GitLab CI, or CircleCI local CLI.
 
 > **Note:** GitHub's hosted macOS-26 runners run natively on Apple Silicon and support Metal compute shaders. Full build and test can run on GitHub Actions using `macos-26`.
+
+Setting Up GitLab Runner
+------------------------
+
+To run GitLab CI jobs on macOS, register a self-hosted runner:
+
+**Option 1: Using Homebrew (Recommended)**
+```bash
+brew install gitlab-runner
+```
+
+**Option 2: Manual Download**
+```bash
+sudo curl --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-darwin-arm64
+sudo chmod +x /usr/local/bin/gitlab-runner
+
+# Verify installation
+gitlab-runner --version
+```
+
+**Register the runner**
+```bash
+# May require sudo for system-wide installation
+sudo gitlab-runner register --non-interactive \
+  --url https://gitlab.com \
+  --registration-token <TOKEN> \
+  --description macos \
+  --tag-list macos \
+  --executor shell
+```
+
+**Start and verify**
+- **For Homebrew installations:** The service is managed by `brew services`.
+  ```bash
+  brew services start gitlab-runner
+  gitlab-runner verify
+  ```
+- **For manual installations:** First install the service, then start it.
+  ```bash
+  sudo gitlab-runner install
+  sudo gitlab-runner start
+  gitlab-runner verify
+  ```
+
+If `gitlab-runner start` fails (e.g., launchctl error), run in background instead:
+```bash
+gitlab-runner run &
+gitlab-runner verify
+```
+
+Get the registration token from: **GitLab → Project → Settings → CI/CD → Runners → New runner**.
 
 References
 ==========
