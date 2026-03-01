@@ -1,6 +1,10 @@
 Metal SAXPY Compute Kernel
 ===========================
 
+![Metal Compute Shader](https://github.com/harpertoken/.github/raw/main/images/gitlab-runner-settings.png)
+
+[Jump to GitLab Runner Setup](#setting-up-gitlab-runner)
+
 Performing large-scale vector operations on the CPU can be slow and inefficient for data-intensive tasks. Utilizing the GPU via Metal compute shaders on Apple Silicon enables parallel processing, significantly accelerating computations like SAXPY (Single-precision A*X + Y).
 
 Recommendation
@@ -89,13 +93,17 @@ brew install gitlab-runner
 
 **Option 2: Manual Download**
 ```bash
-sudo curl --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-darwin-amd64
+sudo curl --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-darwin-arm64
 sudo chmod +x /usr/local/bin/gitlab-runner
+
+# Verify installation
+gitlab-runner --version
 ```
 
 **Register the runner**
 ```bash
-gitlab-runner register --non-interactive \
+# May require sudo for system-wide installation
+sudo gitlab-runner register --non-interactive \
   --url https://gitlab.com \
   --registration-token <TOKEN> \
   --description macos \
@@ -104,8 +112,21 @@ gitlab-runner register --non-interactive \
 ```
 
 **Start and verify**
+- **For Homebrew installations:** The service is managed by `brew services`.
+  ```bash
+  brew services start gitlab-runner
+  gitlab-runner verify
+  ```
+- **For manual installations:** First install the service, then start it.
+  ```bash
+  sudo gitlab-runner install
+  sudo gitlab-runner start
+  gitlab-runner verify
+  ```
+
+If `gitlab-runner start` fails (e.g., launchctl error), run in background instead:
 ```bash
-gitlab-runner start
+gitlab-runner run &
 gitlab-runner verify
 ```
 
