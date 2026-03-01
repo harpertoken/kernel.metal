@@ -77,6 +77,40 @@ CI/CD
 
 > **Note:** GitHub's hosted macOS-26 runners run natively on Apple Silicon and support Metal compute shaders. Full build and test can run on GitHub Actions using `macos-26`.
 
+Setting Up GitLab Runner
+------------------------
+
+To run GitLab CI jobs on macOS, register a self-hosted runner:
+
+**Option 1: Using Homebrew (Recommended)**
+```bash
+brew install gitlab-runner
+```
+
+**Option 2: Manual Download**
+```bash
+sudo curl --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-darwin-amd64
+sudo chmod +x /usr/local/bin/gitlab-runner
+```
+
+**Register the runner**
+```bash
+gitlab-runner register --non-interactive \
+  --url https://gitlab.com \
+  --registration-token <TOKEN> \
+  --description macos \
+  --tag-list macos \
+  --executor shell
+```
+
+**Start and verify**
+```bash
+gitlab-runner start
+gitlab-runner verify
+```
+
+Get the registration token from: **GitLab → Project → Settings → CI/CD → Runners → New runner**.
+
 References
 ==========
 
